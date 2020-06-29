@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+spec:
+  selector:
+    matchLabels:
+      app: jenkins
+  replicas: 1
+  template: 
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: docker.io/cdougan/jenkins-k8s:v0.3
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+         - name: config-volume
+           mountPath: /etc/config/jenkins
+      volumes:
+        - name: config-volume
+          configMap:
+            name: jenkins-plugin-configmap
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  labels:
+    app: jenkins
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 8080
+    port: 8080
+    protocol: TCP
+  selector:
+    app: jenkins
